@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "declaration": true,
+    "module": "amd",
+    "outFile": "./build/ros3dnav.js",
+    "preserveConstEnums": true,
+    "pretty": true,
+    "removeComments": true,
+    "sourceMap": true
+  },
+  "files": [
+    "typings/index.d.ts",
+    "src/ros3dnav.ts",
+    "src/navigation/path.ts",
+    "src/navigation/pathArray.ts",
+    "src/visualization/sceneNode.ts"
+  ]
+}
