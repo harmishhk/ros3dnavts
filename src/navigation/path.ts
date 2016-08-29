@@ -3,12 +3,12 @@ namespace ROS3DNAV {
     ros: ROSLIB.Ros;
     topic: string;
     tfClient: ROSLIB.TFClient;
-    color?: number;
+    color?: THREE.Color | number;
     rootObject?: THREE.Object3D;
   }
 
   export class Path extends THREE.Object3D {
-    private color: number;
+    private color: THREE.Color | number;
     private rootObject: THREE.Object3D;
 
     private line: THREE.Line;
@@ -16,7 +16,7 @@ namespace ROS3DNAV {
 
     constructor(public options: PathOptions) {
       super();
-      this.color = options.color || 0xcc00ff;
+      this.color = options.color || new THREE.Color(0xcc00ff);
       this.rootObject = options.rootObject || new THREE.Object3D;
 
       this.line = new THREE.Line();
@@ -48,7 +48,8 @@ namespace ROS3DNAV {
       }
       lineGeometry.computeLineDistances();
 
-      let lineMaterial = new THREE.LineBasicMaterial({ color: this.color });
+      let lineColor = typeof this.color == "number" ? <number>this.color : (<THREE.Color>this.color).getHex();
+      let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor });
       this.line = new THREE.Line(lineGeometry, lineMaterial);
 
       if (this.sn.getFrame() != message.header.frame_id) {
