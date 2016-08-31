@@ -12,8 +12,10 @@
   "files": [
     "typings/index.d.ts",
     "src/ros3dnav.ts",
+    "src/navigation/occupancyGridClient.ts",
     "src/navigation/path.ts",
     "src/navigation/pathArray.ts",
-    "src/visualization/sceneNode.ts"
+    "src/visualization/sceneNode.ts",
+    "src/visualization/viewer.ts"
   ]
 }

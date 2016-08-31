@@ -3,21 +3,24 @@ namespace ROS3DNAV {
     ros: ROSLIB.Ros;
     topic: string;
     tfClient: ROSLIB.TFClient;
-    color?: THREE.Color | number;
     rootObject?: THREE.Object3D;
+    color?: THREE.Color | number;
+    width?: number;
   }
 
   export class PathArray extends THREE.Object3D {
-    private color: THREE.Color | number;
     private rootObject: THREE.Object3D;
+    private color: THREE.Color | number;
+    private width: number;
 
     private lines: THREE.Line[];
     private sn: SceneNode;
 
     constructor(public options: PathArrayOptions) {
       super();
+      this.rootObject = options.rootObject || new THREE.Object3D();
       this.color = options.color || new THREE.Color(0xcc00ff);
-      this.rootObject = options.rootObject || new THREE.Object3D;
+      this.width = options.width || 1;
 
       this.lines = new Array<THREE.Line>();
 
@@ -50,7 +53,7 @@ namespace ROS3DNAV {
         }
         lineGeometry.computeLineDistances();
         let lineColor = typeof this.color == "number" ? <number>this.color : (<THREE.Color>this.color).getHex();
-        let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor });
+        let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: this.width, overdraw: 0.5 });
         this.lines.push(new THREE.Line(lineGeometry, lineMaterial));
       }
 

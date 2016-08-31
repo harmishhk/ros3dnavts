@@ -9,5 +9,9 @@ namespace ROS3DNAV {
     getFrame() {
       return this.frameID;
     }
+
+    getObject() {
+      return this.object;
+    }
   }
 }
