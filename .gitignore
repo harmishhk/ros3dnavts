@@ -1,8 +1,4 @@
-# Build
-/build/
-
-# Definitions
-/typings/
-
-# Editor
 /.vscode/
+typings/
+node_modules/
+build/

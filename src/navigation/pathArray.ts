@@ -27,14 +27,14 @@ namespace ROS3DNAV {
       this.sn = new SceneNode({
         tfClient: options.tfClient,
         frameID: options.tfClient.fixedFrame,
-        object: new THREE.Line()
+        object: new THREE.Line(),
       });
       this.rootObject.add(this.sn);
 
       let rosTopic = new ROSLIB.Topic({
         ros: options.ros,
         name: options.topic,
-        messageType: 'hanp_msgs/PathArray'
+        messageType: "hanp_msgs/PathArray",
       });
       rosTopic.subscribe(this.pathArrayReceived);
     }
@@ -52,12 +52,12 @@ namespace ROS3DNAV {
           lineGeometry.vertices.push(v3);
         }
         lineGeometry.computeLineDistances();
-        let lineColor = typeof this.color == "number" ? <number>this.color : (<THREE.Color>this.color).getHex();
+        let lineColor = typeof this.color === "number" ? <number>this.color : (<THREE.Color>this.color).getHex();
         let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: this.width, overdraw: 0.5 });
         this.lines.push(new THREE.Line(lineGeometry, lineMaterial));
       }
 
-      if (this.sn.frameID != message.header.frame_id) {
+      if (this.sn.frameID !== message.header.frame_id) {
         this.sn.resubscribeTf(message.header.frame_id);
       }
 

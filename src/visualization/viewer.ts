@@ -4,7 +4,7 @@ namespace ROS3DNAV {
     private lastUserRotateSpeed: number;
     private orbitControlsEnabled: boolean = true;
 
-    disableOrbitControls() {
+    public disableOrbitControls() {
       if (this.orbitControlsEnabled) {
         this.lastAutoRotateSpeed = this.cameraControls.autoRotateSpeed;
         this.lastUserRotateSpeed = this.cameraControls.userRotateSpeed;
@@ -13,7 +13,7 @@ namespace ROS3DNAV {
         this.orbitControlsEnabled = false;
       }
     }
-    enableOrbitControls() {
+    public enableOrbitControls() {
       if (!this.orbitControlsEnabled) {
         this.cameraControls.autoRotateSpeed = this.lastAutoRotateSpeed;
         this.cameraControls.userRotateSpeed = this.lastUserRotateSpeed;

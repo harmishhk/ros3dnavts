@@ -21,7 +21,8 @@ namespace ROS3DNAV {
     private showingArrow: boolean;
 
     private senderInfo: any;
-    private arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion, message?: string, senderInfo?: any) => void;
+    private arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion,
+      message?: string, senderInfo?: any) => void;
 
     constructor(options: OccupancyGridClientOptions) {
       super(options);
@@ -38,13 +39,16 @@ namespace ROS3DNAV {
       this.showingArrow = false;
     }
 
-    createArrowControl(arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion, message?: string, senderInfo?: any) => void, senderInfo?: any) {
+    public createArrowControl(
+      arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion,
+        message?: string, senderInfo?: any) => void,
+      senderInfo?: any) {
       if (!this.currentGrid) {
         return false;
       }
       this.viewer.disableOrbitControls();
       this.mouseDownPoint = null;
-      addEventListener('mousedown', this.onMouseDown);
+      addEventListener("mousedown", this.onMouseDown);
 
       this.senderInfo = senderInfo || null;
       this.arrowCallback = arrowCallback;
@@ -53,13 +57,14 @@ namespace ROS3DNAV {
 
     private onMouseDown = (event: MouseEvent) => {
       this.mouseDownPoint = this.getMousePoint(event);
-      removeEventListener('mousedown', this.onMouseDown);
+      removeEventListener("mousedown", this.onMouseDown);
       if (this.mouseDownPoint != null) {
-        addEventListener('mousemove', this.onMouseMove);
-        addEventListener('mouseup', this.onMouseUp);
+        addEventListener("mousemove", this.onMouseMove);
+        addEventListener("mouseup", this.onMouseUp);
       } else {
         this.viewer.enableOrbitControls();
-        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calculate mousedown point', this.senderInfo);
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(),
+          "Cannot calculate mousedown point", this.senderInfo);
       }
     }
 
@@ -75,51 +80,50 @@ namespace ROS3DNAV {
         }
         this.showingArrow = true;
       } else {
-        removeEventListener('mousemove', this.onMouseMove);
-        removeEventListener('mouseup', this.onMouseUp);
+        removeEventListener("mousemove", this.onMouseMove);
+        removeEventListener("mouseup", this.onMouseUp);
         this.viewer.enableOrbitControls();
-        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calculate mousemove point', this.senderInfo);
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(),
+          "Cannot calculate mousemove point", this.senderInfo);
       }
     }
 
     private onMouseUp = (event: MouseEvent) => {
-      removeEventListener('mousemove', this.onMouseMove);
-      removeEventListener('mouseup', this.onMouseUp);
+      removeEventListener("mousemove", this.onMouseMove);
+      removeEventListener("mouseup", this.onMouseUp);
       this.viewer.scene.remove(this.arrow);
       this.showingArrow = false;
       let mouseStopPoint = this.getMousePoint(event);
       if (mouseStopPoint != null) {
-        let direction = new THREE.Vector3().subVectors(this.mouseDownPoint, mouseStopPoint);
+        let theta = Math.atan2(mouseStopPoint.y - this.mouseDownPoint.y, mouseStopPoint.x - this.mouseDownPoint.x);
         let quaternion = new THREE.Quaternion();
-        quaternion.setFromEuler(new THREE.Euler(direction.x, direction.y, direction.z, 'XYZ'));
+        quaternion.setFromEuler(new THREE.Euler(0, 0, theta, "XYZ"));
+        quaternion.normalize();
         this.viewer.enableOrbitControls();
-        this.arrowCallback(true, this.mouseDownPoint, quaternion, '', this.senderInfo);
+        this.arrowCallback(true, this.mouseDownPoint, quaternion, "", this.senderInfo);
       } else {
         this.viewer.enableOrbitControls();
-        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calcualte mouseup point', this.senderInfo);
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(),
+          "Cannot calcualte mouseup point", this.senderInfo);
       }
     }
 
     private getMousePoint(event: MouseEvent) {
-      try {
-        this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.width) * 2 - 1;
-        this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.height) * 2 + 1;
-        this.mouseVector.z = 0.0;
-        this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
-        this.mouseRaycaster.set(
-          this.viewer.camera.position.clone(),
-          this.mouseVector.sub(this.viewer.camera.position).normalize());
-        this.mouseRaycaster.linePrecision = 0.001;
+      this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.width) * 2 - 1;
+      this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.height) * 2 + 1;
+      this.mouseVector.z = 0.0;
+      this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
+      this.mouseRaycaster.set(
+        this.viewer.camera.position.clone(),
+        this.mouseVector.sub(this.viewer.camera.position).normalize());
+      this.mouseRaycaster.linePrecision = 0.001;
 
-        let intersects = this.mouseRaycaster.intersectObject(this.currentGrid, true);
-        if (intersects.length > 0) {
-          return new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0)
-        }
+      let intersects = this.mouseRaycaster.intersectObject(this.currentGrid, true);
+      if (intersects.length > 0) {
+        return new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0);
+      } else {
+        return null;
       }
-      catch (err) {
-        console.log(err.message);
-      }
-      return null;
     }
   }
 }
