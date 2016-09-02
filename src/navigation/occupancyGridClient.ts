@@ -16,10 +16,12 @@ namespace ROS3DNAV {
     private mouseRaycaster: THREE.Raycaster;
     private projector: THREE.Projector;
     private mouseVector: THREE.Vector3;
-    private gridObject: ROS3D.OccupancyGrid;
-    private arrorControlSetup: boolean;
     private mouseDownPoint: THREE.Vector3;
     private arrow: THREE.ArrowHelper;
+    private showingArrow: boolean;
+
+    private senderInfo: any;
+    private arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion, message?: string, senderInfo?: any) => void;
 
     constructor(options: OccupancyGridClientOptions) {
       super(options);
@@ -33,75 +35,91 @@ namespace ROS3DNAV {
       let targetPos = new THREE.Vector3(1, 0, 0);
       let direction = new THREE.Vector3().subVectors(targetPos, sourcePos);
       this.arrow = new THREE.ArrowHelper(direction.normalize(), sourcePos, direction.length(), 0x00ff00);
-
-      if (typeof this.currentGrid == "ROS3DNAV.SceneNode") {
-        this.gridObject = <ROS3D.OccupancyGrid>(<ROS3DNAV.SceneNode>this.currentGrid).getObject();
-      } else {
-        this.gridObject = <ROS3D.OccupancyGrid>this.currentGrid;
-      }
+      this.showingArrow = false;
     }
 
-    enableArrowControl() {
+    createArrowControl(arrowCallback: (success: boolean, position?: THREE.Vector3, orientation?: THREE.Quaternion, message?: string, senderInfo?: any) => void, senderInfo?: any) {
+      if (!this.currentGrid) {
+        return false;
+      }
       this.viewer.disableOrbitControls();
       this.mouseDownPoint = null;
-      addEventListener('mouseup', this.onMouseChange);
-      addEventListener('mousemove', this.onMouseChange);
-      addEventListener('mousedown', this.onMouseChange);
+      addEventListener('mousedown', this.onMouseDown);
+
+      this.senderInfo = senderInfo || null;
+      this.arrowCallback = arrowCallback;
+      return true;
     }
 
-    disableArrowControl() {
-      this.viewer.enableOrbitControls();
-      removeEventListener('mouseup', this.onMouseChange);
-      removeEventListener('mousemove', this.onMouseChange);
-      removeEventListener('mousedown', this.onMouseChange);
+    private onMouseDown = (event: MouseEvent) => {
+      this.mouseDownPoint = this.getMousePoint(event);
+      removeEventListener('mousedown', this.onMouseDown);
+      if (this.mouseDownPoint != null) {
+        addEventListener('mousemove', this.onMouseMove);
+        addEventListener('mouseup', this.onMouseUp);
+      } else {
+        this.viewer.enableOrbitControls();
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calculate mousedown point', this.senderInfo);
+      }
     }
 
-    private onMouseChange = (event: MouseEvent) => {
-      this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.width) * 2 - 1;
-      this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.height) * 2 + 1;
-      this.mouseVector.z = 0.5;
-      this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
-      this.mouseRaycaster.set(
-        this.viewer.camera.position.clone(),
-        this.mouseVector.sub(this.viewer.camera.position).normalize());
-      this.mouseRaycaster.linePrecision = 0.001;
-
-      let intersects = this.mouseRaycaster.intersectObject(this.gridObject, true);
-      if (intersects.length > 0) {
-        if (event.type == 'mousedown') {
-          console.log('mouse moved start');
-          this.mouseDownPoint = new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0);
-          let direction = new THREE.Vector3().subVectors(this.mouseDownPoint, this.mouseDownPoint);
-          this.arrow.position.set(this.mouseDownPoint.x, this.mouseDownPoint.y, this.mouseDownPoint.z);
-          this.arrow.setDirection(direction.normalize());
-          this.arrow.setLength(direction.length());
+    private onMouseMove = (event: MouseEvent) => {
+      let mouseMovePoint = this.getMousePoint(event);
+      if (mouseMovePoint != null) {
+        let direction = new THREE.Vector3().subVectors(mouseMovePoint, this.mouseDownPoint);
+        this.arrow.setLength(direction.length());
+        this.arrow.setDirection(direction.normalize());
+        if (!this.showingArrow) {
+          this.arrow.position = this.mouseDownPoint;
           this.viewer.scene.add(this.arrow);
         }
-        else {
-          if (!this.mouseDownPoint) {
-            this.viewer.scene.remove(this.arrow);
-            //return failure
-          }
-          if (event.type == 'mousemove') {
-            console.log(intersects[0].point);
-            let mouseMovePoint = new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0);
-            let direction = new THREE.Vector3().subVectors(this.mouseDownPoint, mouseMovePoint);
-            this.arrow.setDirection(direction.normalize());
-            this.arrow.setLength(direction.length());
-          } else if (event.type == 'mouseup') {
-            console.log(intersects[0].point);
-            console.log('mouse move stopped')
-            let mouseStopPoint = new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0);
-            let direction = new THREE.Vector3().subVectors(this.mouseDownPoint, mouseStopPoint);
-            this.arrow.setDirection(direction.normalize());
-            this.arrow.setLength(direction.length());
-            this.viewer.scene.remove(this.arrow);
-          } else {
-            this.viewer.scene.remove(this.arrow);
-            // failure for unknown event
-          }
+        this.showingArrow = true;
+      } else {
+        removeEventListener('mousemove', this.onMouseMove);
+        removeEventListener('mouseup', this.onMouseUp);
+        this.viewer.enableOrbitControls();
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calculate mousemove point', this.senderInfo);
+      }
+    }
+
+    private onMouseUp = (event: MouseEvent) => {
+      removeEventListener('mousemove', this.onMouseMove);
+      removeEventListener('mouseup', this.onMouseUp);
+      this.viewer.scene.remove(this.arrow);
+      this.showingArrow = false;
+      let mouseStopPoint = this.getMousePoint(event);
+      if (mouseStopPoint != null) {
+        let direction = new THREE.Vector3().subVectors(this.mouseDownPoint, mouseStopPoint);
+        let quaternion = new THREE.Quaternion();
+        quaternion.setFromEuler(new THREE.Euler(direction.x, direction.y, direction.z, 'XYZ'));
+        this.viewer.enableOrbitControls();
+        this.arrowCallback(true, this.mouseDownPoint, quaternion, '', this.senderInfo);
+      } else {
+        this.viewer.enableOrbitControls();
+        this.arrowCallback(false, new THREE.Vector3(), new THREE.Quaternion(), 'Cannot calcualte mouseup point', this.senderInfo);
+      }
+    }
+
+    private getMousePoint(event: MouseEvent) {
+      try {
+        this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.width) * 2 - 1;
+        this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.height) * 2 + 1;
+        this.mouseVector.z = 0.0;
+        this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
+        this.mouseRaycaster.set(
+          this.viewer.camera.position.clone(),
+          this.mouseVector.sub(this.viewer.camera.position).normalize());
+        this.mouseRaycaster.linePrecision = 0.001;
+
+        let intersects = this.mouseRaycaster.intersectObject(this.currentGrid, true);
+        if (intersects.length > 0) {
+          return new THREE.Vector3(intersects[0].point.x, intersects[0].point.y, 0.0)
         }
       }
+      catch (err) {
+        console.log(err.message);
+      }
+      return null;
     }
   }
 }
