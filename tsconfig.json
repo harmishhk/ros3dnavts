@@ -15,6 +15,7 @@
     "src/navigation/occupancyGridClient.ts",
     "src/navigation/path.ts",
     "src/navigation/pathArray.ts",
+    "src/time/time.ts",
     "src/visualization/sceneNode.ts",
     "src/visualization/viewer.ts"
   ]

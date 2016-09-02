@@ -5,13 +5,5 @@ namespace ROS3DNAV {
       this.frameID = frameID;
       this.tfClient.subscribe(this.frameID, this.tfUpdate);
     }
-
-    getFrame() {
-      return this.frameID;
-    }
-
-    getObject() {
-      return this.object;
-    }
   }
 }

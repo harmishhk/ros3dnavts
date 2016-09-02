@@ -55,7 +55,7 @@ namespace ROS3DNAV {
       let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: this.width, overdraw: 0.5 });
       this.line = new THREE.Line(lineGeometry, lineMaterial);
 
-      if (this.sn.getFrame() != message.header.frame_id) {
+      if (this.sn.frameID != message.header.frame_id) {
         this.sn.resubscribeTf(message.header.frame_id);
       }
 
