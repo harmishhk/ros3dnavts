@@ -114,7 +114,7 @@ namespace ROS3DNAV {
       this.mouseVector.z = 0.0;
       this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
       this.mouseRaycaster.set(
-        this.viewer.camera.position.clone(),
+        this.viewer.camera.position,
         this.mouseVector.sub(this.viewer.camera.position).normalize());
       this.mouseRaycaster.linePrecision = 0.001;
 
