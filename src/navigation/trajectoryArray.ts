@@ -45,10 +45,10 @@ namespace ROS3DNAV {
 
       for (let trajectory of message.trajectories) {
         let lineGeometry = new THREE.Geometry();
-        for (let i = 0; i < trajectory.poses.length; i++) {
-          let v3 = new THREE.Vector3(trajectory.poses[i].pose.position.x,
-            trajectory.poses[i].pose.position.y,
-            trajectory.poses[i].pose.position.z);
+        for (let i = 0; i < trajectory.points.length; i++) {
+          let v3 = new THREE.Vector3(trajectory.points[i].transform.translation.x,
+            trajectory.points[i].transform.translation.y,
+            trajectory.points[i].transform.translation.z);
           lineGeometry.vertices.push(v3);
         }
         lineGeometry.computeLineDistances();

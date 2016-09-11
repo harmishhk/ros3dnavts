@@ -43,10 +43,10 @@ namespace ROS3DNAV {
       let previousLine = this.line;
 
       let lineGeometry = new THREE.Geometry();
-      for (let i = 0; i < message.poses.length; i++) {
-        let v3 = new THREE.Vector3(message.poses[i].pose.position.x,
-          message.poses[i].pose.position.y,
-          message.poses[i].pose.position.z);
+      for (let i = 0; i < message.points.length; i++) {
+        let v3 = new THREE.Vector3(message.points[i].transform.translation.x,
+          message.points[i].transform.translation.y,
+          message.points[i].transform.translation.z);
         lineGeometry.vertices.push(v3);
       }
       lineGeometry.computeLineDistances();
