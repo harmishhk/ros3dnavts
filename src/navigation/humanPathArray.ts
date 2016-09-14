@@ -1,5 +1,5 @@
 namespace ROS3DNAV {
-  export class TrajectoryArray extends THREE.Object3D {
+  export class HumanPathArray extends THREE.Object3D {
     private rootObject: THREE.Object3D;
     private color: THREE.Color | number;
     private width: number;
@@ -7,7 +7,7 @@ namespace ROS3DNAV {
     private lines: THREE.Line[];
     private sn: SceneNode;
 
-    constructor(public options: TrajectoryOptions) {
+    constructor(public options: PathOptions) {
       super();
       this.rootObject = options.rootObject || new THREE.Object3D();
       this.color = options.color || new THREE.Color(0xcc00ff);
@@ -25,21 +25,21 @@ namespace ROS3DNAV {
       let rosTopic = new ROSLIB.Topic({
         ros: options.ros,
         name: options.topic,
-        messageType: "hanp_msgs/TrajectoryArray",
+        messageType: "hanp_msgs/HumanPathArray",
       });
-      rosTopic.subscribe(this.trajectoryArrayReceived);
+      rosTopic.subscribe(this.pathArrayReceived);
     }
 
-    private trajectoryArrayReceived = (message: HANPMsgs.TrajectoryArray) => {
+    private pathArrayReceived = (message: HANPMsgs.HumanPathArray) => {
       let previousLines = this.lines;
       this.lines = new Array<THREE.Line>();
 
-      for (let trajectory of message.trajectories) {
+      for (let path of message.paths) {
         let lineGeometry = new THREE.Geometry();
-        for (let i = 0; i < trajectory.points.length; i++) {
-          let v3 = new THREE.Vector3(trajectory.points[i].transform.translation.x,
-            trajectory.points[i].transform.translation.y,
-            trajectory.points[i].transform.translation.z);
+        for (let i = 0; i < path.path.poses.length; i++) {
+          let v3 = new THREE.Vector3(path.path.poses[i].pose.position.x,
+            path.path.poses[i].pose.position.y,
+            path.path.poses[i].pose.position.z);
           lineGeometry.vertices.push(v3);
         }
         lineGeometry.computeLineDistances();

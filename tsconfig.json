@@ -12,9 +12,12 @@
   "files": [
     "typings/index.d.ts",
     "src/ros3dnav.ts",
+    "src/navigation/humanPath.ts",
+    "src/navigation/humanPathArray.ts",
+    "src/navigation/humanTrajectory.ts",
+    "src/navigation/humanTrajectoryArray.ts",
     "src/navigation/occupancyGridClient.ts",
     "src/navigation/path.ts",
-    "src/navigation/pathArray.ts",
     "src/navigation/trajectory.ts",
     "src/navigation/trajectoryArray.ts",
     "src/time/time.ts",

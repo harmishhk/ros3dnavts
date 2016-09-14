@@ -1,14 +1,5 @@
 namespace ROS3DNAV {
-  export interface PathArrayOptions {
-    ros: ROSLIB.Ros;
-    topic: string;
-    tfClient: ROSLIB.TFClient;
-    rootObject?: THREE.Object3D;
-    color?: THREE.Color | number;
-    width?: number;
-  }
-
-  export class PathArray extends THREE.Object3D {
+  export class HumanTrajectoryArray extends THREE.Object3D {
     private rootObject: THREE.Object3D;
     private color: THREE.Color | number;
     private width: number;
@@ -16,7 +7,7 @@ namespace ROS3DNAV {
     private lines: THREE.Line[];
     private sn: SceneNode;
 
-    constructor(public options: PathArrayOptions) {
+    constructor(public options: TrajectoryOptions) {
       super();
       this.rootObject = options.rootObject || new THREE.Object3D();
       this.color = options.color || new THREE.Color(0xcc00ff);
@@ -34,21 +25,21 @@ namespace ROS3DNAV {
       let rosTopic = new ROSLIB.Topic({
         ros: options.ros,
         name: options.topic,
-        messageType: "hanp_msgs/PathArray",
+        messageType: "hanp_msgs/HumanTrajectoryArray",
       });
-      rosTopic.subscribe(this.pathArrayReceived);
+      rosTopic.subscribe(this.trajectoryArrayReceived);
     }
 
-    private pathArrayReceived = (message: HANPMsgs.PathArray) => {
+    private trajectoryArrayReceived = (message: HANPMsgs.HumanTrajectoryArray) => {
       let previousLines = this.lines;
       this.lines = new Array<THREE.Line>();
 
-      for (let path of message.paths) {
+      for (let trajectory of message.trajectories) {
         let lineGeometry = new THREE.Geometry();
-        for (let i = 0; i < path.poses.length; i++) {
-          let v3 = new THREE.Vector3(path.poses[i].pose.position.x,
-            path.poses[i].pose.position.y,
-            path.poses[i].pose.position.z);
+        for (let i = 0; i < trajectory.trajectory.points.length; i++) {
+          let v3 = new THREE.Vector3(trajectory.trajectory.points[i].transform.translation.x,
+            trajectory.trajectory.points[i].transform.translation.y,
+            trajectory.trajectory.points[i].transform.translation.z);
           lineGeometry.vertices.push(v3);
         }
         lineGeometry.computeLineDistances();
