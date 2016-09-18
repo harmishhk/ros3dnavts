@@ -109,8 +109,8 @@ namespace ROS3DNAV {
     }
 
     private getMousePoint(event: MouseEvent) {
-      this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.width) * 2 - 1;
-      this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.height) * 2 + 1;
+      this.mouseVector.x = (event.clientX / this.viewer.renderer.domElement.clientWidth) * 2 - 1;
+      this.mouseVector.y = - (event.clientY / this.viewer.renderer.domElement.clientHeight) * 2 + 1;
       this.mouseVector.z = 0.0;
       this.projector.unprojectVector(this.mouseVector, this.viewer.camera);
       this.mouseRaycaster.set(
