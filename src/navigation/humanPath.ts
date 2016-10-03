@@ -3,6 +3,7 @@ namespace ROS3DNAV {
     private rootObject: THREE.Object3D;
     private color: THREE.Color | number;
     private width: number;
+    private zOffset: number;
 
     private line: THREE.Line;
     private sn: SceneNode;
@@ -12,6 +13,7 @@ namespace ROS3DNAV {
       this.rootObject = options.rootObject || new THREE.Object3D();
       this.color = options.color || new THREE.Color(0xcc00ff);
       this.width = options.width || 1;
+      this.zOffset = options.zOffset || 0.05;
 
       this.line = new THREE.Line();
 
@@ -37,7 +39,7 @@ namespace ROS3DNAV {
       for (let i = 0; i < message.path.poses.length; i++) {
         let v3 = new THREE.Vector3(message.path.poses[i].pose.position.x,
           message.path.poses[i].pose.position.y,
-          message.path.poses[i].pose.position.z);
+          message.path.poses[i].pose.position.z + this.zOffset);
         lineGeometry.vertices.push(v3);
       }
       lineGeometry.computeLineDistances();
