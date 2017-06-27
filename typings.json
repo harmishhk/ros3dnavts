@@ -5,9 +5,9 @@
   "version": "0.1.0",
   "globalDependencies": {
     "eventemitter2": "registry:dt/eventemitter2#2.2.0+20161123234806",
-    "roslib": "github:harmishhk/rosjs-typings/roslib/typings.json#18bb208ef930323817d9b2d57e3e8e34d7db5496",
-    "rosmsgs": "github:harmishhk/rosjs-typings/rosmsgs/typings.json#18bb208ef930323817d9b2d57e3e8e34d7db5496",
-    "ros3d": "github:harmishhk/rosjs-typings/ros3d/typings.json#18bb208ef930323817d9b2d57e3e8e34d7db5496",
+    "roslib": "github:harmishhk/rosjs-typings/roslib/typings.json#c078521380b57dda9e823be09a41385a4d019ef5",
+    "rosmsgs": "github:harmishhk/rosjs-typings/rosmsgs/typings.json#c078521380b57dda9e823be09a41385a4d019ef5",
+    "ros3d": "github:harmishhk/rosjs-typings/ros3d/typings.json#c078521380b57dda9e823be09a41385a4d019ef5",
     "three": "registry:dt/three#0.84.0+20170323144537",
     "three-projector": "registry:dt/three-projector#0.0.0+20160405225030"
   }
