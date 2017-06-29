@@ -11,21 +11,32 @@ namespace ROS3DNAV {
 
   export class Trajectory extends THREE.Object3D {
     private rootObject: THREE.Object3D;
-    private color: THREE.Color | number;
+    private color: THREE.Color;
+    private cylinderColor: THREE.Color;
     private width: number;
     private zOffset: number;
 
     private line: THREE.Line;
+    private cylinderGeometry: THREE.Geometry;
     private sn: SceneNode;
 
     constructor(public options: TrajectoryOptions) {
       super();
       this.rootObject = options.rootObject || new THREE.Object3D();
-      this.color = options.color || new THREE.Color(0xcc00ff);
+      let optionColor = options.color || new THREE.Color(0xcc00ff);
+      this.color = typeof optionColor === "number" ? new THREE.Color(optionColor) : optionColor;
+      // this.cylinderColor = this.color.clone();
+      this.cylinderColor = new THREE.Color(0x0000ff);
       this.width = options.width || 1;
       this.zOffset = options.zOffset || 0.05;
 
       this.line = new THREE.Line();
+
+      let cylinderLength = 2.0;
+      let cylinderRadius = 0.1;
+      this.cylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderLength, 8);
+      this.cylinderGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, cylinderLength / 2, 0));
+      this.cylinderGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 
       this.sn = new SceneNode({
         tfClient: options.tfClient,
@@ -54,9 +65,36 @@ namespace ROS3DNAV {
       }
       lineGeometry.computeLineDistances();
 
-      let lineColor = typeof this.color === "number" ? <number>this.color : (<THREE.Color>this.color).getHex();
-      let lineMaterial = new THREE.LineBasicMaterial({ color: lineColor, linewidth: this.width, overdraw: 0.5 });
+      let lineMaterial = new THREE.LineBasicMaterial({ color: this.color.getHex(), linewidth: this.width, overdraw: 0.5 });
       this.line = new THREE.Line(lineGeometry, lineMaterial);
+
+      let cylinderHue = 1.0;
+      for (let j = 1; j < message.points.length; j++) {
+        if (message.points[j].time_from_start.secs != message.points[j - 1].time_from_start.secs) {
+          let nSecBefore = 1 - message.points[j - 1].time_from_start.nsecs * 1e-9;
+          let nSecAfter = message.points[j].time_from_start.nsecs * 1e-9;
+          let tRatio = nSecBefore / (nSecBefore + nSecAfter);
+          let xDiff = message.points[j].transform.translation.x - message.points[j - 1].transform.translation.x;
+          let yDiff = message.points[j].transform.translation.y - message.points[j - 1].transform.translation.y;
+
+          let cylinderMaterial = new THREE.MeshBasicMaterial({ color: this.cylinderColor.clone().setHSL(cylinderHue, 1, 0.5).getHex() });
+          let cylinder = new THREE.Mesh(this.cylinderGeometry, cylinderMaterial)
+
+          cylinder.position.x = message.points[j - 1].transform.translation.x + (tRatio * xDiff);
+          cylinder.position.y = message.points[j - 1].transform.translation.y + (tRatio * yDiff);
+          cylinder.position.z = 0;
+
+          if (cylinderHue > 0.0) {
+            cylinderHue -= 0.1;
+          }
+          this.line.add(cylinder);
+
+          // console.log("before point " + (j - 1) + ", time: secs=" + message.points[j - 1].time_from_start.secs + ", nsecs=" + message.points[j - 1].time_from_start.nsecs + ", x=" + message.points[j - 1].transform.translation.x + ", y=" + message.points[j - 1].transform.translation.y);
+          // console.log("after  point " + j + ", time: secs=" + message.points[j].time_from_start.secs + ", nsecs=" + message.points[j].time_from_start.nsecs + ", x=" + message.points[j].transform.translation.x + ", y=" + message.points[j].transform.translation.y);
+          // console.log("ratio=" + tRatio + ", xDiff=" + xDiff + ", yDiff=" + yDiff + ", nSecBefore=" + nSecBefore + ", nSecAfter=" + nSecAfter);
+          // console.log("mid point: x=" + lineCylinder.position.x + ", y=" + lineCylinder.position.y);
+        }
+      }
 
       if (this.sn.frameID !== message.header.frame_id) {
         this.sn.resubscribeTf(message.header.frame_id);
