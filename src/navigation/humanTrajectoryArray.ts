@@ -16,14 +16,14 @@ namespace ROS3DNAV {
       let optionColor = options.color || new THREE.Color(0xcc00ff);
       this.color = typeof optionColor === "number" ? new THREE.Color(optionColor) : optionColor;
       // this.cylinderColor = this.color.clone();
-      this.cylinderColor = new THREE.Color(0x0000ff);
+      this.cylinderColor = new THREE.Color(0xffff00);
       this.width = options.width || 1;
       this.zOffset = options.zOffset || 0.05;
 
       this.lines = new Array<THREE.Line>();
 
-      let cylinderLength = 2.0;
-      let cylinderRadius = 0.1;
+      let cylinderLength = 0.5;
+      let cylinderRadius = 0.075;
       this.cylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderLength, 8);
       this.cylinderGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, cylinderLength / 2, 0));
       this.cylinderGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
@@ -76,7 +76,7 @@ namespace ROS3DNAV {
             cylinder.position.z = 0;
 
             if (cylinderHue > 0.0) {
-              cylinderHue -= 0.1;
+              cylinderHue -= 0.05;
             }
             line.add(cylinder);
           }
